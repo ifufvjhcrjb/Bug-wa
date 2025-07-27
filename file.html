@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Attack Menu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: black;
+      font-family: 'Orbitron', sans-serif;
+      color: red;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #mainScreen, #hackingScreen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .title-text {
+      font-family: 'Courier New', monospace;
+      font-size: 48px;
+      color: orangered;
+      margin-bottom: 40px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px red;
+    }
+
+    h2 {
+      color: red;
+      margin-bottom: 20px;
+    }
+
+    input, select, button {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+      padding: 10px;
+      width: 280px;
+      margin: 10px;
+      border-radius: 10px;
+      border: 2px solid red;
+      background-color: black;
+      color: red;
+    }
+
+    select option {
+      background-color: black;
+      color: red;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: crimson;
+    }
+
+    button {
+      background-color: #cc0000;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #ff0000;
+    }
+
+    .popup {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1a0000;
+      color: white;
+      padding: 25px 30px;
+      border: 2px solid red;
+      border-radius: 12px;
+      z-index: 1000;
+      box-shadow: 0 0 20px red;
+      text-align: center;
+      display: none;
+    }
+
+    .popup.success {
+      border-color: limegreen;
+      background-color: #002200;
+      box-shadow: 0 0 20px limegreen;
+      color: limegreen;
+    }
+
+    #hackingScreen {
+      display: none;
+      background-color: black;
+      color: lime;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 10px;
+      overflow-y: auto;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="mainScreen">
+    <div class="title-text">𝔎𝔞𝔦𝔦 || 𝔞𝔪𝔢𝔯𝔱</div>
+    <h2>Attack Menu</h2>
+    <input type="number" id="targetNumber" placeholder="Target number (e.g. 62812xxx...)">
+    <select id="attackType">
+      <option value="" disabled selected>Choose crash type</option>
+      <option value="Unlimited Crash">Unlimited Crash</option>
+      <option value="Crash Invisible">Crash Invisible</option>
+      <option value="Hard Delay Invisible">Hard Delay Invisible</option>
+      <option value="IOS Crash (exp)">IOS Crash (exp)</option>
+      <option value="Android UI Killer">Android UI Killer</option>
+    </select>
+    <button onclick="sendBug()">▶ SEND BUG</button>
+  </div>
+
+  <div id="hackingScreen"></div>
+
+  <div class="popup" id="popupBox">
+    <div id="popupMessage"></div>
+  </div>
+
+  <script>
+    const baseUrls = [
+      "packages-cf.termux.dev/apt", "linux.domainesia.com/applications", "termux.niranjan.co",
+      "mirror.bardia.tech", "mirrors.saswata.cc", "mirrors.ravidwivedi.in", "mirror.textcord.xyz",
+      "mirrors.krnk.org/apt", "mirror.rinarin.dev", "mirror.jeonnam.school",
+      "mirrors.nguyenhoang.cloud", "mirrors.cbrx.io/apt", "tmx.xvx.my.id/apt",
+      "mirror.albony.in", "mirror.twds.com.tw", "mirror.nevacloud.com/applications",
+      "mirror.meowsmp.net", "mirror.freedif.org", "mirrors.in.sahilister.net",
+      "mirror.iscas.ac.cn/termux/apt", "mirrors.sau.edu.cn/termux/apt", "mirrors.sdu.edu.cn",
+      "mirrors.aliyun.com", "mirrors.cernet.edu.cn/termux/apt", "mirrors.cqupt.edu.cn",
+      "mirrors.sustech.edu.cn/termux/apt", "mirrors.bfsu.edu.cn/termux/apt", "mirrors.pku.edu.cn",
+      "mirrors.hust.edu.cn/termux/apt", "mirrors.tuna.tsinghua.edu.cn/termux/apt",
+      "mirror.sjtu.edu.cn", "mirror.nyist.edu.cn/termux/apt", "mirrors.ustc.edu.cn",
+      "mirrors.zju.edu.cn/termux/apt", "mirrors.nju.edu.cn/termux/apt", "grimler.se",
+      "mirror.polido.pt", "termux.3san.dev", "mirrors.medzik.dev", "mirror.accum.se/mirror/termux.dev",
+      "mirror.mwt.me", "ro.mirror.flokinet.net", "md.mirrors.hacktegic.com", "is.mirror.flokinet.net",
+      "mirror.termux.dev", "termux.mentality.rip", "nl.mirror.flokinet.net", "termux.cdn.lumito.net",
+      "mirror.leitecastro.com", "mirror.bouwhuis.network", "termux.librehat.com/apt",
+      "mirror.autkin.net", "mirror.sunred.org", "ftp.agdsn.de", "ftp.fau.de",
+      "mirrors.cfe.re", "mirrors.de.sahilister.net", "gnlug.org/pub", "mirror.quantum5.ca",
+      "mirrors.utermux.dev", "plug-mirror.rcac.purdue.edu", "mirror.vern.cc",
+      "dl.kcubeterm.com", "termux.danyael.xyz", "mirror.csclub.uwaterloo.ca",
+      "mirror.fcix.net", "mirrors.middlendian.com", "repository.su", "mirror.mephi.ru"
+    ];
+
+    let attackType = "", targetNumber = "";
+
+    function sendBug() {
+      targetNumber = document.getElementById('targetNumber').value;
+      attackType = document.getElementById('attackType').value;
+
+      if (!targetNumber || !attackType) {
+        showPopup("❌ Gagal: Isi nomor dan jenis crash!");
+        setTimeout(hidePopup, 2000);
+        return;
+      }
+
+      showPopup(`Mengirim <b>${attackType}</b> ke <b>${targetNumber}</b>...`);
+      setTimeout(() => {
+        hidePopup();
+        document.getElementById('mainScreen').style.display = 'none';
+        startHackingEffect();
+      }, 1000);
+    }
+
+    function showPopup(message, success = false) {
+      const popup = document.getElementById('popupBox');
+      popup.classList.remove('success');
+      if (success) popup.classList.add('success');
+      document.getElementById('popupMessage').innerHTML = message;
+      popup.style.display = 'block';
+    }
+
+    function hidePopup() {
+      const popup = document.getElementById('popupBox');
+      popup.classList.remove('success');
+      popup.style.display = 'none';
+    }
+
+    function startHackingEffect() {
+      const screen = document.getElementById('hackingScreen');
+      screen.innerHTML = "";
+      screen.style.display = 'block';
+
+      let index = 0;
+      const totalLines = 180;
+      let delayNext = getRandomPauseIndex();
+
+      function appendLine() {
+        if (index >= totalLines) {
+          showPopup(`✅ Berhasil mengirim <b>${attackType}</b> kepada <b>${targetNumber}</b>`, true);
+          setTimeout(() => {
+            hidePopup();
+            screen.style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'flex';
+          }, 3000);
+          return;
+        }
+
+        if (index === delayNext) {
+          delayNext += getRandomPauseIndex();
+          setTimeout(appendLine, 500); // jeda 0.5 detik
+          return;
+        }
+
+        const url = baseUrls[index % baseUrls.length];
+        const status = Math.random() > 0.2 ? 'ok' : 'bad';
+        const count = String(Math.floor(Math.random() * 10) + 1).padStart(2, ' ');
+        const paddedURL = `https://${url}/termux/termux-main`.padEnd(60, ' ');
+        const line = `[*] (${count})  ${paddedURL}: ${status}`;
+        screen.innerHTML += line + "\n";
+        screen.scrollTop = screen.scrollHeight;
+        index++;
+        setTimeout(appendLine, 80);
+      }
+
+      function getRandomPauseIndex() {
+        return Math.floor(Math.random() * 10) + 10;
+      }
+
+      appendLine();
+    }
+  </script>
+</body>
+</html>
